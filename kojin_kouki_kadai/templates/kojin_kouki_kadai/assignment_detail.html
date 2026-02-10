@@ -21,8 +21,7 @@
                 <h5 class="mb-0">基本情報</h5>
             </div>
             <div class="card-body">
-                <p><strong>講義:</strong> <a href="{% url 'lecture_detail' assignment.lecture.pk %}">{{
-                        assignment.lecture.name }}</a></p>
+                <p><strong>講義:</strong> <a href="{% url 'lecture_detail' assignment.lecture.pk %}">{{ assignment.lecture.name }}</a></p>
                 <p><strong>講師:</strong> {{ assignment.lecture.instructor }}</p>
                 {% if assignment.description %}
                 <p><strong>説明:</strong></p>
@@ -46,8 +45,7 @@
                 {% else %}
                 <p><span class="badge bg-success display-6">採点済み</span></p>
                 {% endif %}
-                <p class="card-text"><small class="text-muted">最終更新: {{ assignment.updated_at|date:"Y年m月d日 H:i"
-                        }}</small></p>
+                <p class="card-text"><small class="text-muted">最終更新: {{ assignment.updated_at|date:"Y年m月d日 H:i" }}</small></p>
             </div>
         </div>
 
