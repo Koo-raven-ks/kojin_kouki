@@ -1,0 +1,129 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}課題一覧{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-9">
+        <h1>📋 課題一覧</h1>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'assignment_create' %}" class="btn btn-primary w-100">+ 課題を追加</a>
+    </div>
+</div>
+
+<!-- フィルタ -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">ステータス</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status==value %}selected{% endif %}>{{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="priority" class="form-select form-select-sm">
+                    <option value="">優先度</option>
+                    {% for value, label in priority_choices %}
+                    <option value="{{ value }}" {% if request.GET.priority==value %}selected{% endif %}>{{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="lecture" class="form-select form-select-sm">
+                    <option value="">講義</option>
+                    {% for lecture in lectures %}
+                    <option value="{{ lecture.id }}" {% if request.GET.lecture==lecture.id|stringformat:"s" %}selected{%
+                        endif %}>{{ lecture.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-sm btn-primary w-100">フィルタ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if assignments %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>課題名</th>
+                        <th>講義</th>
+                        <th>優先度</th>
+                        <th>ステータス</th>
+                        <th>期限</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>{{ assignment.lecture.name }}</td>
+                        <td>
+                            {% if assignment.priority == 'high' %}
+                            <span class="badge bg-danger">高</span>
+                            {% elif assignment.priority == 'medium' %}
+                            <span class="badge bg-warning">中</span>
+                            {% else %}
+                            <span class="badge bg-secondary">低</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if assignment.status == 'pending' %}
+                            <span class="badge bg-secondary">未提出</span>
+                            {% elif assignment.status == 'submitted' %}
+                            <span class="badge bg-info">提出済み</span>
+                            {% else %}
+                            <span class="badge bg-success">採点済み</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ assignment.due_date|date:"m/d" }}</td>
+                        <td>
+                            <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-sm btn-primary">詳細</a>
+                            <a href="{% url 'assignment_update' assignment.pk %}"
+                                class="btn btn-sm btn-secondary">編集</a>
+                            <a href="{% url 'assignment_delete' assignment.pk %}" class="btn btn-sm btn-danger">削除</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ページネーション -->
+{% if is_paginated %}
+<nav aria-label="ページネーション" class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">最初</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">前</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages
+                }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">次</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <p>フィルタ条件に合う課題がありません。</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}{{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-9">
+        <h1>📝 {{ assignment.title }}</h1>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'assignment_update' assignment.pk %}" class="btn btn-warning">編集</a>
+        <a href="{% url 'assignment_delete' assignment.pk %}" class="btn btn-danger">削除</a>
+        <a href="{% url 'assignment_list' %}" class="btn btn-secondary">一覧に戻る</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>講義:</strong> <a href="{% url 'lecture_detail' assignment.lecture.pk %}">{{
+                        assignment.lecture.name }}</a></p>
+                <p><strong>講師:</strong> {{ assignment.lecture.instructor }}</p>
+                {% if assignment.description %}
+                <p><strong>説明:</strong></p>
+                <p>{{ assignment.description|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- ステータスカード -->
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">ステータス</h5>
+            </div>
+            <div class="card-body">
+                {% if assignment.status == 'pending' %}
+                <p><span class="badge bg-secondary display-6">未提出</span></p>
+                {% elif assignment.status == 'submitted' %}
+                <p><span class="badge bg-info display-6">提出済み</span></p>
+                {% else %}
+                <p><span class="badge bg-success display-6">採点済み</span></p>
+                {% endif %}
+                <p class="card-text"><small class="text-muted">最終更新: {{ assignment.updated_at|date:"Y年m月d日 H:i"
+                        }}</small></p>
+            </div>
+        </div>
+
+        <!-- 期限カード -->
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">提出期限</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>{{ assignment.due_date|date:"Y年m月d日 H:i" }}</strong>
+                </p>
+                {% if assignment.status == 'pending' %}
+                {% if assignment.is_overdue %}
+                <p class="text-danger"><strong>⚠️ 期限超過</strong></p>
+                {% elif assignment.days_until_due == 0 %}
+                <p class="text-danger"><strong>⏰ 本日中に提出！</strong></p>
+                {% elif assignment.days_until_due < 3 %} <p class="text-warning"><strong>📅 {{ assignment.days_until_due
+                        }}日後</strong></p>
+                    {% else %}
+                    <p class="text-success"><strong>✓ 余裕あり（{{ assignment.days_until_due }}日）</strong></p>
+                    {% endif %}
+                    {% endif %}
+            </div>
+        </div>
+
+        <!-- 優先度カード -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">優先度</h5>
+            </div>
+            <div class="card-body">
+                {% if assignment.priority == 'high' %}
+                <p><span class="badge bg-danger display-6">高</span></p>
+                {% elif assignment.priority == 'medium' %}
+                <p><span class="badge bg-warning display-6">中</span></p>
+                {% else %}
+                <p><span class="badge bg-info display-6">低</span></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 提出記録 -->
+{% if submission %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">📬 提出記録</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>提出日時:</strong> {{ submission.submitted_at|date:"Y年m月d日 H:i" }}</p>
+        {% if submission.notes %}
+        <p><strong>備考:</strong> {{ submission.notes|linebreaks }}</p>
+        {% endif %}
+        <a href="{% url 'submission_update' submission.pk %}" class="btn btn-sm btn-warning">提出記録を編集</a>
+        <a href="{% url 'submission_delete' submission.pk %}" class="btn btn-sm btn-danger">提出記録を削除</a>
+    </div>
+</div>
+
+<!-- 採点記録（先生用） -->
+{% if submission.grading %}
+<div class="card mt-3">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">✏️ 採点記録</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>成績:</strong> {{ submission.grading.grade }}点</p>
+        <p><strong>採点日時:</strong> {{ submission.grading.graded_at|date:"Y年m月d日 H:i" }}</p>
+        {% if submission.grading.feedback %}
+        <p><strong>フィードバック:</strong></p>
+        <div class="alert alert-info">{{ submission.grading.feedback|linebreaks }}</div>
+        {% endif %}
+        <a href="{% url 'grading_update' submission.grading.pk %}" class="btn btn-sm btn-warning">採点を編集</a>
+        <a href="{% url 'grading_delete' submission.grading.pk %}" class="btn btn-sm btn-danger">採点を削除</a>
+    </div>
+</div>
+{% elif submission %}
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">✏️ 採点記録</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">採点記録がまだ登録されていません。</p>
+        <a href="{% url 'grading_create' submission.pk %}" class="btn btn-success">採点を記録する</a>
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">📬 提出記録</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">提出記録がまだ登録されていません。</p>
+        {% if assignment.status == 'pending' %}
+        <a href="{% url 'submission_create' assignment.pk %}" class="btn btn-success">提出を記録する</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

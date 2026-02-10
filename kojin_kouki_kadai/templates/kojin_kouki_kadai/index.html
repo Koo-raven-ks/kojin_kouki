@@ -1,16 +1,332 @@
+{% extends "kojin_kouki_kadai/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ja">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
+{% block title %}ダッシュボード{% endblock %}
 
-<body>
-    <h1>個人ページ</h1>
-</body>
+{% block content %}
+<h1>📊 ダッシュボード</h1>
 
-</html>
+<!-- グラフ表示 -->
+<div class="row mb-5">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>ステータス別課題数</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>優先度別課題数</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="priorityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>期限別未提出課題</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="deadlineChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>講義別課題数（上位5件）</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="lectureChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 統計情報カード -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <h5>全課題</h5>
+                <p class="display-6 text-primary">{{ all_assignments.count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h5>未提出</h5>
+                <p class="display-6 text-warning">{{ pending_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <h5>提出済み</h5>
+                <p class="display-6 text-info">{{ submitted_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h5>採点済み</h5>
+                <p class="display-6 text-success">{{ graded_count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 高優先度課題 -->
+{% if urgent_assignments %}
+<div class="card mb-4">
+    <div class="card-header" style="background-color: #e74c3c; color: white;">
+        <h5>⚠️ 高優先度・未提出（{{ urgent_count }}件）</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>課題名</th>
+                        <th>講義</th>
+                        <th>期限</th>
+                        <th>残り</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in urgent_assignments %}
+                    <tr>
+                        <td><strong>{{ assignment.title }}</strong></td>
+                        <td>{{ assignment.lecture.name }}</td>
+                        <td>{{ assignment.due_date|date:"m/d H:i" }}</td>
+                        <td>
+                            {% if assignment.days_until_due < 0 %} <span class="badge bg-danger">期限超過</span>
+                                {% elif assignment.days_until_due == 0 %}
+                                <span class="badge bg-danger">本日</span>
+                                {% else %}
+                                {{ assignment.days_until_due }}日
+                                {% endif %}
+                        </td>
+                        <td><a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-sm btn-primary">詳細</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 全課題一覧 -->
+<div class="card">
+    <div class="card-header">
+        <h5>📋 全課題一覧</h5>
+    </div>
+    <div class="card-body">
+        {% if all_assignments %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>課題名</th>
+                        <th>講義</th>
+                        <th>優先度</th>
+                        <th>ステータス</th>
+                        <th>期限</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in all_assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>{{ assignment.lecture.name }}</td>
+                        <td>
+                            {% if assignment.priority == 'high' %}
+                            <span class="badge bg-danger">高</span>
+                            {% elif assignment.priority == 'medium' %}
+                            <span class="badge bg-warning">中</span>
+                            {% else %}
+                            <span class="badge bg-secondary">低</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if assignment.status == 'pending' %}
+                            <span class="badge bg-secondary">未提出</span>
+                            {% elif assignment.status == 'submitted' %}
+                            <span class="badge bg-info">提出済み</span>
+                            {% else %}
+                            <span class="badge bg-success">採点済み</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ assignment.due_date|date:"m/d" }}</td>
+                        <td><a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-sm btn-primary">詳細</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">課題がまだ登録されていません。</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'lecture_create' %}" class="btn btn-primary">+ 講義を追加</a>
+    <a href="{% url 'assignment_create' %}" class="btn btn-primary">+ 課題を追加</a>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // モノクロカラーパレット
+    const grayColors = {
+        dark: '#2c3e50',
+        medium: '#34495e',
+        light: '#7f8c8d',
+        lighter: '#95a5a6',
+        lightest: '#bdc3c7'
+    };
+
+    // 1. ステータス別課題数（円グラフ）
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['未提出', '提出済み', '採点済み'],
+            datasets: [{
+                data: [{{ pending_count }}, {{ submitted_count }}, {{ graded_count }}],
+        backgroundColor: [grayColors.lighter, grayColors.medium, grayColors.dark],
+        borderWidth: 2,
+        borderColor: '#fff'
+        }]
+    },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+    // 2. 優先度別課題数（棒グラフ）
+    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+    new Chart(priorityCtx, {
+        type: 'bar',
+        data: {
+            labels: ['高', '中', '低'],
+            datasets: [{
+                label: '課題数',
+                data: [{{ high_priority }}, {{ medium_priority }}, {{ low_priority }}],
+        backgroundColor: [grayColors.dark, grayColors.medium, grayColors.light],
+        borderWidth: 1,
+        borderColor: grayColors.dark
+        }]
+    },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+    // 3. 期限別未提出課題（棒グラフ）
+    const deadlineCtx = document.getElementById('deadlineChart').getContext('2d');
+    new Chart(deadlineCtx, {
+        type: 'bar',
+        data: {
+            labels: ['期限超過', '今週', '来週', '2週間以降'],
+            datasets: [{
+                label: '未提出課題数',
+                data: [{{ overdue }}, {{ this_week }}, {{ next_week }}, {{ later }}],
+        backgroundColor: [grayColors.dark, grayColors.medium, grayColors.light, grayColors.lighter],
+        borderWidth: 1,
+        borderColor: grayColors.dark
+        }]
+    },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+    // 4. 講義別課題数（横棒グラフ）
+    const lectureCtx = document.getElementById('lectureChart').getContext('2d');
+    const lectureLabels = [{% for lecture in lectures_data %}'{{ lecture.name|escapejs }}'{% if not forloop.last %}, {% endif %} {% endfor %}];
+    const lectureData = [{% for lecture in lectures_data %}{ { lecture.assignment_count } } {% if not forloop.last %}, {% endif %} {% endfor %}];
+
+    new Chart(lectureCtx, {
+        type: 'bar',
+        data: {
+            labels: lectureLabels,
+            datasets: [{
+                label: '課題数',
+                data: lectureData,
+                backgroundColor: grayColors.medium,
+                borderWidth: 1,
+                borderColor: grayColors.dark
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

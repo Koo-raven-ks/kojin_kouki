@@ -1,0 +1,29 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}採点記録削除確認{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">❌ 採点記録を削除</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <p class="lead">本当にこの採点記録を削除しますか？</p>
+                <p><strong>課題:</strong> {{ object.submission.assignment.title }}</p>
+                <p><strong>成績:</strong> {{ object.grade }}点</p>
+                {% if object.feedback %}
+                <p><strong>フィードバック:</strong> {{ object.feedback }}</p>
+                {% endif %}
+                <p class="text-danger"><strong>この操作は取り消せません。</strong></p>
+            </div>
+        </div>
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">削除</button>
+            <a href="{% url 'assignment_detail' object.submission.assignment.pk %}" class="btn btn-secondary">キャンセル</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

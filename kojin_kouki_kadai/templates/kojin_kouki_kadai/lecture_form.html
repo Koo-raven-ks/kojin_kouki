@@ -1,0 +1,75 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}講義{% if form.instance.pk %}編集{% else %}作成{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            {% if form.instance.pk %}
+            📖 講義を編集
+            {% else %}
+            📖 新しい講義を作成
+            {% endif %}
+        </h1>
+
+        <form method="post" class="card p-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <div class="text-danger">{{ form.name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.instructor.label }}</label>
+                {{ form.instructor }}
+                {% if form.instructor.errors %}
+                <div class="text-danger">{{ form.instructor.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.day_of_week.label }}</label>
+                    {{ form.day_of_week }}
+                    {% if form.day_of_week.errors %}
+                    <div class="text-danger">{{ form.day_of_week.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.classroom.label }}</label>
+                    {{ form.classroom }}
+                    {% if form.classroom.errors %}
+                    <div class="text-danger">{{ form.classroom.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.start_time.label }}</label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}
+                    <div class="text-danger">{{ form.start_time.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.end_time.label }}</label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}
+                    <div class="text-danger">{{ form.end_time.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{% url 'lecture_list' %}" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

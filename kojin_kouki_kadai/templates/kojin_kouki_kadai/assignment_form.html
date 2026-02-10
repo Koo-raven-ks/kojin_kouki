@@ -1,0 +1,75 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}課題{% if form.instance.pk %}編集{% else %}作成{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            {% if form.instance.pk %}
+            📝 課題を編集
+            {% else %}
+            📝 新しい課題を作成
+            {% endif %}
+        </h1>
+
+        <form method="post" class="card p-4">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.lecture.label }}</label>
+                {{ form.lecture }}
+                {% if form.lecture.errors %}
+                <div class="text-danger">{{ form.lecture.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.title.label }}</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <div class="text-danger">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.due_date.label }}</label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}
+                    <div class="text-danger">{{ form.due_date.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.priority.label }}</label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}
+                    <div class="text-danger">{{ form.priority.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.status.label }}</label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                <div class="text-danger">{{ form.status.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{% url 'assignment_list' %}" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}{{ lecture.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-9">
+        <h1>📖 {{ lecture.name }}</h1>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'lecture_update' lecture.pk %}" class="btn btn-warning">編集</a>
+        <a href="{% url 'lecture_delete' lecture.pk %}" class="btn btn-danger">削除</a>
+        <a href="{% url 'lecture_list' %}" class="btn btn-secondary">一覧に戻る</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <p><strong>講師:</strong> {{ lecture.instructor }}</p>
+                <p><strong>曜日:</strong> {{ lecture.get_day_of_week_display }}</p>
+                <p><strong>時間:</strong> {{ lecture.start_time|time:"H:i" }} - {{ lecture.end_time|time:"H:i" }}</p>
+                <p><strong>教室:</strong> {{ lecture.classroom }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 関連課題 ({{ assignments.count }}件)</h5>
+            </div>
+            <div class="card-body">
+                {% if assignments %}
+                <table class="table table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>課題名</th>
+                            <th>優先度</th>
+                            <th>ステータス</th>
+                            <th>提出期限</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>
+                                {% if assignment.priority == 'high' %}
+                                <span class="badge bg-danger">高</span>
+                                {% elif assignment.priority == 'medium' %}
+                                <span class="badge bg-warning">中</span>
+                                {% else %}
+                                <span class="badge bg-info">低</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if assignment.status == 'pending' %}
+                                <span class="badge bg-secondary">未提出</span>
+                                {% elif assignment.status == 'submitted' %}
+                                <span class="badge bg-info">提出済み</span>
+                                {% else %}
+                                <span class="badge bg-success">採点済み</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ assignment.due_date|date:"Y/m/d H:i" }}</td>
+                            <td>
+                                <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-sm btn-info">詳細</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">この講義にはまだ課題が登録されていません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

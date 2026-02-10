@@ -1,0 +1,46 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}講義一覧{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-9">
+        <h1>📖 講義一覧</h1>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'lecture_create' %}" class="btn btn-primary w-100">+ 講義を追加</a>
+    </div>
+</div>
+
+{% if lectures %}
+<div class="row">
+    {% for lecture in lectures %}
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>{{ lecture.name }}</h5>
+                <p>
+                    <small>
+                        <strong>講師:</strong> {{ lecture.instructor }}<br>
+                        <strong>曜日:</strong> {{ lecture.get_day_of_week_display }}<br>
+                        <strong>時間:</strong> {{ lecture.start_time|time:"H:i" }} - {{ lecture.end_time|time:"H:i" }}<br>
+                        <strong>教室:</strong> {{ lecture.classroom }}<br>
+                        <strong>課題:</strong> {{ lecture.assignments.count }}件
+                    </small>
+                </p>
+                <div class="mt-2">
+                    <a href="{% url 'lecture_detail' lecture.pk %}" class="btn btn-sm btn-primary">詳細</a>
+                    <a href="{% url 'lecture_update' lecture.pk %}" class="btn btn-sm btn-secondary">編集</a>
+                    <a href="{% url 'lecture_delete' lecture.pk %}" class="btn btn-sm btn-danger">削除</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p>まだ講義が登録されていません。<a href="{% url 'lecture_create' %}">新しい講義を追加</a>してください。</p>
+</div>
+{% endif %}
+{% endblock %}

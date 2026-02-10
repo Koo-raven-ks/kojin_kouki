@@ -1,0 +1,64 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}提出記録{% if form.instance.pk %}編集{% else %}作成{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4">
+            {% if form.instance.pk %}
+            📬 提出記録を編集
+            {% else %}
+            📬 提出を記録
+            {% endif %}
+        </h1>
+
+        <form method="post" class="card p-4">
+            {% csrf_token %}
+
+            {% if assignment %}
+            <div class="alert alert-info">
+                <strong>課題:</strong> {{ assignment.title }}<br>
+                <strong>講義:</strong> {{ assignment.lecture.name }}<br>
+                <strong>提出期限:</strong> {{ assignment.due_date|date:"Y年m月d日 H:i" }}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.assignment.label }}</label>
+                {{ form.assignment }}
+                {% if form.assignment.errors %}
+                <div class="text-danger">{{ form.assignment.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.submitted_at.label }}</label>
+                {{ form.submitted_at }}
+                {% if form.submitted_at.errors %}
+                <div class="text-danger">{{ form.submitted_at.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">{{ form.notes.label }}</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                <div class="text-danger">{{ form.notes.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">保存</button>
+                {% if form.instance.pk %}
+                <a href="{% url 'assignment_detail' form.instance.assignment.pk %}" class="btn btn-secondary">キャンセル</a>
+                {% elif assignment %}
+                <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-secondary">キャンセル</a>
+                {% else %}
+                <a href="{% url 'assignment_list' %}" class="btn btn-secondary">キャンセル</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

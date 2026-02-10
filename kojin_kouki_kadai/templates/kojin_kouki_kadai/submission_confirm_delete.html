@@ -1,0 +1,25 @@
+{% extends "kojin_kouki_kadai/base.html" %}
+
+{% block title %}提出記録を削除{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">⚠️ 提出記録を削除</h5>
+            </div>
+            <div class="card-body">
+                <p>本当に「<strong>{{ object.assignment.title }}</strong>」の提出記録を削除しますか？</p>
+                <p class="text-muted">課題のステータスは未提出に戻ります。</p>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">削除する</button>
+                    <a href="{% url 'assignment_detail' object.assignment.pk %}" class="btn btn-secondary">キャンセル</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
