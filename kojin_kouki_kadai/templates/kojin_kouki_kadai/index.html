@@ -294,8 +294,8 @@
 
     // 4. 講義別課題数（横棒グラフ）
     const lectureCtx = document.getElementById('lectureChart').getContext('2d');
-    const lectureLabels = [{% for lecture in lectures_data %}'{{ lecture.name|escapejs }}'{% if not forloop.last %}, {% endif %} {% endfor %}];
-    const lectureData = [{% for lecture in lectures_data %}{ { lecture.assignment_count } } {% if not forloop.last %}, {% endif %} {% endfor %}];
+    const lectureLabels = [{% for lecture in lectures_data %}'{{ lecture.name|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const lectureData = [{% for lecture in lectures_data %}{{ lecture.assignment_count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
 
     new Chart(lectureCtx, {
         type: 'bar',
